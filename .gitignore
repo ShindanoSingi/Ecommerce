@@ -1,3 +1,4 @@
 myText.txt
 .history
 node_modules
+.env
