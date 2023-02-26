@@ -2,3 +2,4 @@ myText.txt
 .history
 node_modules
 .env
+./config/dbConnect.js
