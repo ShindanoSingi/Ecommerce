@@ -3,3 +3,4 @@ myText.txt
 node_modules
 .env
 ./config/dbConnect.js
+req.REST
