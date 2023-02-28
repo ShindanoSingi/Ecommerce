@@ -27,13 +27,13 @@ const loginUser = asyncHandler(
         console.log(email, password);
 
         const findUser = await User.findOne({ email });
-        if (findUser && await findUser.isPasswordMatched(password)) {
+        if (findUser && (await findUser.password === password)) {
             res.json({
-                id: findUser?._id,
-                firstName: findUser?.firstName,
-                lastName: findUser?.lastName,
-                email: findUser?.email,
-                mobile: findUser?.mobile,
+                id: findUser._id,
+                firstName: findUser.firstName,
+                lastName: findUser.lastName,
+                email: findUser.email,
+                mobile: findUser.mobile,
                 token: generateToken(findUser._id)
             });
         }
@@ -73,7 +73,7 @@ const getaUser = asyncHandler(
 // Update a single user
 const updateaUser = asyncHandler(
     async (req, res) => {
-        const { id } = req?.params;
+        const { id } = req?.user;
         const userInputs = req?.body;
         try {
             let updateaUser = await User.findById(id);
@@ -83,10 +83,10 @@ const updateaUser = asyncHandler(
             }
 
             updateaUser = await User.findByIdAndUpdate(id, {
-                firstName: updateaUser?.firstName,
-                lastName: updateaUser?.lastName,
-                email: updateaUser?.email,
-                mobile: updateaUser?.mobile
+                firstName: userInputs?.firstName,
+                lastName: userInputs?.lastName,
+                email: userInputs?.email,
+                mobile: userInputs?.mobile
             }, { new: true });
             res.json(`User updated successfully!`);
 

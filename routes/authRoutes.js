@@ -7,7 +7,8 @@ router.post('/register', createUser);
 router.post('/login', loginUser);
 router.get('/users', getAllUsers);
 router.get('/:id', authMiddleware, isAdmin, getaUser);
-router.put('/:id', updateaUser);
+router.put('/edit-user', authMiddleware, updateaUser);
+router.put('/block-user/:id', authMiddleware, updateaUser);
 router.delete('/:id', deleteaUser);
 
 module.exports = router;
