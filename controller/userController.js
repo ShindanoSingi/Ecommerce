@@ -1,6 +1,7 @@
 const User = require('../models/userModel');
 const { generateToken } = require('../config/jwtToken');
 const asyncHandler = require('express-async-handler');
+const { validateMongoId } = require('../utils/validateMongodbId');
 const { response } = require('express');
 
 // Create a new user
@@ -61,6 +62,7 @@ const getAllUsers = asyncHandler(
 const getaUser = asyncHandler(
     async (req, res) => {
         const { id } = req.params;
+        validateMongodbId(id)
         try {
             const getaUser = await User.findById(id);
             res.json(getaUser);
@@ -74,6 +76,7 @@ const getaUser = asyncHandler(
 const updateaUser = asyncHandler(
     async (req, res) => {
         const { id } = req?.user;
+        validateMongoId(id)
         const userInputs = req?.body;
         try {
             let updateaUser = await User.findById(id);
@@ -117,4 +120,48 @@ const deleteaUser = asyncHandler(
     }
 )
 
-module.exports = { createUser, loginUser, getAllUsers, getaUser, updateaUser, deleteaUser };
+// Block user
+const blockUser = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    validateMongoId(id)
+    try {
+        let user = await User.findById(id);
+        console.log(user);
+
+        if (user) {
+            const blockusr = await User.findByIdAndUpdate(id, { isBlocked: true }, { new: true });
+            res.json({
+                message: `User Blocked!`
+            });
+        } else {
+            res.json({ message: `User does not exist` });
+        }
+
+    } catch (error) {
+        throw new Error(error);
+    }
+})
+
+// Unblock user
+const unblockUser = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    try {
+        let user = await User.findById(id);
+        validateMongoId(id)
+        console.log(user);
+
+        if (user) {
+            const unblockusr = await User.findByIdAndUpdate(id, { isBlocked: false }, { new: true });
+            res.json({
+                message: `User Unblocked!`
+            });
+        } else {
+            res.json({ message: `User does not exist` });
+        }
+
+    } catch (error) {
+        throw new Error(error);
+    }
+})
+
+module.exports = { createUser, loginUser, getAllUsers, getaUser, updateaUser, deleteaUser, blockUser, unblockUser };
