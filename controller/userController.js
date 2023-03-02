@@ -1,15 +1,16 @@
-const User = require('../models/userModel');
+
 const { generateToken } = require('../config/jwtToken');
 const asyncHandler = require('express-async-handler');
 const { validateMongoId } = require('../utils/validateMongodbId');
+const { generateRefreshToken } = require('../config/refreshToken');
+const User = require('../models/userModel');
+
 const { response } = require('express');
 
 // Create a new user
 const createUser = asyncHandler(
     async (req, res) => {
         const userInputs = req.body;
-
-
         const findUser = await User.findOne({ email: userInputs.email });
 
         if (!findUser) {
@@ -28,14 +29,23 @@ const loginUser = asyncHandler(
         console.log(email, password);
 
         const findUser = await User.findOne({ email });
+        console.log(findUser);
         if (findUser && (await findUser.password === password)) {
+            const refreshToken = await generateRefreshToken(findUser?._id);
+            const updateuser = await User.findByIdAndUpdate(findUser?._id, {
+                refreshToken: refreshToken
+            }, { new: true });
+            res.cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                maxAge: 72 * 60 * 60 * 1000,
+            });
             res.json({
-                id: findUser._id,
-                firstName: findUser.firstName,
-                lastName: findUser.lastName,
-                email: findUser.email,
-                mobile: findUser.mobile,
-                token: generateToken(findUser._id)
+                id: findUser?._id,
+                firstName: findUser?.firstName,
+                lastName: findUser?.lastName,
+                email: findUser?.email,
+                mobile: findUser?.mobile,
+                token: generateToken(findUser?._id)
             });
         }
         else {
@@ -71,6 +81,12 @@ const getaUser = asyncHandler(
         }
     }
 )
+
+// Refresh a token
+const handleRefreshToken = asyncHandler(async (req, res) => {
+    const cookie = req.cookies;
+    console.log('cookie')
+})
 
 // Update a single user
 const updateaUser = asyncHandler(
@@ -162,6 +178,7 @@ const unblockUser = asyncHandler(async (req, res) => {
     } catch (error) {
         throw new Error(error);
     }
-})
+});
 
-module.exports = { createUser, loginUser, getAllUsers, getaUser, updateaUser, deleteaUser, blockUser, unblockUser };
+
+module.exports = { createUser, loginUser, getAllUsers, getaUser, updateaUser, deleteaUser, blockUser, unblockUser, handleRefreshToken };
