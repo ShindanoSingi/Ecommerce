@@ -5,6 +5,8 @@ const { validateMongoDbId } = require('../utils/validateMongodbId');
 const { generateRefreshToken } = require('../config/refreshToken');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
+const sendEmail = require('./emailController');
+const crypto = require('crypto');
 
 const { response } = require('express');
 const { find } = require('../models/userModel');
@@ -48,7 +50,7 @@ const loginUser = asyncHandler(
                 lastName: findUser?.lastName,
                 email: findUser?.email,
                 mobile: findUser?.mobile,
-                token: generateToken(findUser?._id)
+                token: generateToken(findUser?._id),
             });
         }
         else {
@@ -196,5 +198,19 @@ const unblockUser = asyncHandler(async (req, res) => {
     }
 });
 
+const updatePassword = asyncHandler(async (req, res) => {
+    const { id } = req.user;
+    const { password } = req.body;
+    validateMongoDbId(id);
+    const user = await User.findById(id);
 
-module.exports = { createUser, loginUser, getAllUsers, getaUser, updateaUser, deleteaUser, blockUser, unblockUser, handleRefreshToken };
+    if (password) {
+        user.password = password;
+        const updatePassword = await user.save();
+        res.json(updatePassword);
+    } else {
+        res.json(user);
+    }
+})
+
+module.exports = { createUser, loginUser, getAllUsers, getaUser, updateaUser, deleteaUser, blockUser, unblockUser, handleRefreshToken, updatePassword };
