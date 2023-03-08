@@ -17,16 +17,15 @@ const sendEmail = asyncHandler(async (data, req, res) => {
     // Send mail with defined transport object
     let info = await transporter.sendMail({
         from: '<abc@gmail.com>',
-        to: 'shindanosingi1@gmail.com',
+        to: data.to,
         subject: data.subject,
         text: data.text,
         html: data.html,
     });
 
-    console.log(43434343);
     console.log("Message sent: %s", info.messageId);
 
-    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info.html));
 });
 
 
