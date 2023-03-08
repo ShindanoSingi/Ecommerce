@@ -12,4 +12,38 @@ const createBlog = asyncHandler(async (req, res) => {
     }
 })
 
-module.exports = { createBlog }
+const updateBlog = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const findBlog = Blog.findById(id)
+    if (!findBlog) {
+        res.json(`Blog not found!`)
+    }
+    try {
+        const updateBlog = await Blog.findByIdAndUpdate(id, req.body, {
+            new: true
+        });
+        res.json(updateBlog);
+    } catch (err) {
+        throw new Error(err)
+    }
+})
+
+const getBlog = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const findBlog = Blog.findById(id)
+    if (!findBlog) {
+        res.json(`Blog not found!`)
+    }
+    try {
+        const getBlog = await Blog.findById(id);
+        await Blog.findByIdAndUpdate(id, {
+            $inc: { numViews: 1 }
+        },
+            { new: true }
+        );
+        res.json(getBlog);
+    } catch (err) {
+        throw new Error(err)
+    }
+})
+module.exports = { createBlog, updateBlog, getBlog }
