@@ -19,14 +19,19 @@ var blogSchema = new mongoose.Schema({
         default: 0,
     },
     isLiked: {
-        Type: Boolean,
+        type: Boolean,
         default: false,
     },
     isDisliked: {
-        Type: Boolean,
+        type: Boolean,
         default: false,
     },
     likes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+    },
+    ],
+    dislikes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
     },
