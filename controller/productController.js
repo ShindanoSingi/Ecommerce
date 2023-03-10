@@ -147,8 +147,11 @@ const addToWishlist = asyncHandler(async (req, res) => {
 
 const rating = asyncHandler(async (req, res) => {
     const { id } = req.user;
-    const { star, prodId } = req.body;
+    let { star, prodId, comment } = req.body;
+
     try {
+        if (star > 5) star = 5;
+        if (star < 1) star = 0;
         const product = await Product.findById(prodId);
         let alreadyRated = product.ratings.find((userId) => userId.postedby.toString() === id.toString());
         if (alreadyRated) {
@@ -157,19 +160,20 @@ const rating = asyncHandler(async (req, res) => {
                     ratings: { $elemMatch: alreadyRated },
                 },
                 {
-                    $set: { "ratings.$.star": star },
+                    $set: { "ratings.$.star": star, "ratings.$.comment": comment },
                 },
                 {
                     new: true,
                 }
             );
-            res.json(updateRating);
+            // res.json(updateRating);
 
         } else {
             const rateProduct = await Product.findByIdAndUpdate(prodId, {
                 $push: {
                     ratings: {
                         star: star,
+                        comment: comment,
                         postedby: id,
                     },
                 },
@@ -178,8 +182,21 @@ const rating = asyncHandler(async (req, res) => {
                     new: true,
                 }
             );
-            res.json(rateProduct);
         }
+        const getallratings = await Product.findById(prodId);
+        let totalRating = getallratings.ratings.length;
+        let ratingSum = getallratings.ratings.map((item) => item.star).reduce((prev, current) => prev + current, 0);
+        let actualRating = Math.round(ratingSum / totalRating);
+        let finalProduct = await Product.findByIdAndUpdate(
+            prodId,
+            {
+                totalrating: actualRating,
+            },
+            {
+                new: true,
+            }
+        );
+        res.json(finalProduct);
     } catch (error) {
         throw new Error(error);
     }
