@@ -1,4 +1,5 @@
 const Product = require('../models/productModel');
+const User = require('../models/userModel');
 const asyncHandler = require('express-async-handler');
 const slugify = require('slugify');
 
@@ -95,7 +96,7 @@ const getAllProducts = asyncHandler(async (req, res) => {
 
         if (req.query.page) {
             const productCount = await Product.countDocuments();
-            if (skip >= productCount) throw new Error(`This Page does not contain a product!`)
+            if (skip >= productCount) throw new Error(`This Page does not exist!`);
         }
 
         console.log(page, limit, skip);
@@ -111,6 +112,36 @@ const getAllProducts = asyncHandler(async (req, res) => {
     } catch (error) {
         throw new Error(error);
     }
+});
+
+const addToWishlist = asyncHandler(async (req, res) => {
+    const { id } = req.user;
+    const { prodId } = req.body;
+    try {
+        const user = await User.findById(id);
+        const alreadyadded = user.wishlist.find((id) => id.toString() === prodId);
+        if (alreadyadded) {
+            let user = await User.findByIdAndUpdate(id, {
+                $pull: { wishlist: prodId },
+            },
+                {
+                    new: true,
+                }
+            );
+            res.json(user);
+        } else {
+            let user = await User.findByIdAndUpdate(id, {
+                $push: { wishlist: prodId },
+            },
+                {
+                    new: true,
+                }
+            );
+            res.json(user);
+        }
+    } catch (error) {
+        throw new Error(error);
+    };
 })
 
 
@@ -118,4 +149,4 @@ const getAllProducts = asyncHandler(async (req, res) => {
 
 
 
-module.exports = { createProduct, getaProduct, getAllProducts, updateProduct, deleteProduct }
+module.exports = { createProduct, getaProduct, getAllProducts, updateProduct, deleteProduct, addToWishlist }

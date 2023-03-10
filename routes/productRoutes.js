@@ -1,5 +1,5 @@
 const express = require('express');
-const { createProduct, getaProduct, getAllProducts, updateProduct, deleteProduct } = require('../controller/productController');
+const { createProduct, getaProduct, getAllProducts, updateProduct, deleteProduct, addToWishlist } = require('../controller/productController');
 const { isAdmin, authMiddleware } = require('../middlewares/authMiddleware');
 const router = express.Router();
 
@@ -11,6 +11,9 @@ router.get('/:id', getaProduct);
 
 // Get all products
 router.get('/', getAllProducts);
+
+// Update a wishlist
+router.put('/wishlist', authMiddleware, isAdmin, addToWishlist);
 
 // Update a product
 router.put('/:id', authMiddleware, isAdmin, updateProduct);
