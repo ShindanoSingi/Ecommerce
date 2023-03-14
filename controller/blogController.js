@@ -2,22 +2,24 @@ const Blog = require('../models/blogModel');
 const User = require('../models/userModel');
 const asyncHandler = require('express-async-handler');
 const { validateMongoDbId } = require('../utils/validateMongodbId');
+const cloudinaryUploadImg = require('../utils/cloudinary');
+const fs = require('fs');
 
 const createBlog = asyncHandler(async (req, res) => {
     try {
         const newBlog = await Blog.create(req.body);
         res.json(newBlog);
     } catch (err) {
-        throw new Error(err)
+        throw new Error(err);
     }
 })
 
 const updateBlog = asyncHandler(async (req, res) => {
     const { id } = req.params;
     validateMongoDbId(id);
-    const findBlog = Blog.findById(id)
+    const findBlog = Blog.findById(id);
     if (!findBlog) {
-        res.json(`Blog not found!`)
+        res.json(`Blog not found!`);
     }
     try {
         const updateBlog = await Blog.findByIdAndUpdate(id, req.body, {
@@ -25,7 +27,7 @@ const updateBlog = asyncHandler(async (req, res) => {
         });
         res.json(updateBlog);
     } catch (err) {
-        throw new Error(err)
+        throw new Error(err);
     }
 })
 
@@ -153,5 +155,34 @@ const disLikeBlog = asyncHandler(async (req, res) => {
 
 });
 
+const uploadImages = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    validateMongoDbId(id);
+    try {
+        const uploader = (path) => cloudinaryUploadImg(path, "images");
+        const urls = [];
+        const files = req.files;
 
-module.exports = { createBlog, updateBlog, getBlog, getAllBlogs, deleteBlog, likeBlog, disLikeBlog }
+        for (const file of files) {
+            const { path } = file;
+            const newpath = await uploader(path);
+
+            urls.push(newpath);
+            fs.unlinkSync(path);
+        }
+        const findBlog = await Blog.findByIdAndUpdate(id, {
+            images: urls.map((file) => {
+                return file;
+            }),
+        }, {
+            new: true,
+        })
+
+        res.json(findBlog);
+    } catch (error) {
+        throw new Error(error);
+    }
+})
+
+
+module.exports = { createBlog, updateBlog, getBlog, getAllBlogs, deleteBlog, likeBlog, disLikeBlog, uploadImages }

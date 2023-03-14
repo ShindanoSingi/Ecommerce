@@ -8,7 +8,7 @@ const router = express.Router();
 router.post('/', authMiddleware, isAdmin, createProduct);
 
 // upload a photo
-router.put('/upload/:id', authMiddleware, isAdmin, uploadPhoto.array('images', 10), productImgResize, uploadImages);
+router.put('/upload/:id', authMiddleware, isAdmin, uploadPhoto.array("images", 10), productImgResize, uploadImages);
 
 // Get a product
 router.get('/:id', getaProduct);
