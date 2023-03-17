@@ -436,7 +436,19 @@ const createOrder = asyncHandler(async (req, res) => {
     } catch (error) {
         throw new Error(error);
     }
-})
+});
+
+const getOrders = asyncHandler(async (req, res) => {
+    const { id } = req.user;
+    validateMongoDbId(id);
+    try {
+        const userorders = await Order.findOne({ orderby: id }).populate('products.product');
+        console.log(userorders);
+        res.json(userorders);
+    } catch (error) {
+        throw new Error(error);
+    }
+});
 
 
-module.exports = { createUser, loginUser, getAllUsers, getaUser, updateaUser, deleteaUser, blockUser, unblockUser, handleRefreshToken, updatePassword, forgotPasswordToken, resetPassword, loginAdmin, getWishlist, saveAddress, userCart, getUserCart, emptyCart, applyCoupon, createOrder };
+module.exports = { createUser, loginUser, getAllUsers, getaUser, updateaUser, deleteaUser, blockUser, unblockUser, handleRefreshToken, updatePassword, forgotPasswordToken, resetPassword, loginAdmin, getWishlist, saveAddress, userCart, getUserCart, emptyCart, applyCoupon, createOrder, getOrders };
